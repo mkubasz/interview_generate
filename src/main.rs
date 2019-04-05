@@ -30,14 +30,28 @@ struct Filter {
 }
 
 trait QuestionsRepo {
-    fn create(question: Question);
-    fn get(filter: Filter);
-    fn update(question: Question);
-    fn delete(id: Box<Hash>);
+    fn create(question: Question) -> Result<(), E>;
+    fn get(filter: Filter) -> Option<Vec<Question>>;
+    fn update(question: Question) -> Result<(), E>;
+    fn delete(id: Box<Hash>) -> Result<(), E>;
 }
 
 impl QuestionRepo {
-    // TODO
+    fn create(question: Question) -> Result<(), E> {
+
+    }
+
+    fn get(filter: Filter) -> Option<Vec<Question>> {
+
+    }
+
+    fn update(question: Question) -> Result<(), E> {
+
+    }
+
+    fn delete(id: Box<Hash>) -> Result<(), E> {
+
+    }
 }
 
 #[get("/")]
