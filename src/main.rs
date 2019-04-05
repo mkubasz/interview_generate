@@ -3,9 +3,11 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::response::content::Json;
 use std::collections;
+use std::result;
 use std::hash::Hash;
+use rocket::response::content::Json;
+
 
 enum Tag {
     OOP
@@ -36,7 +38,7 @@ impl Level {
 }
 
 struct Question {
-    id: Hash,
+    id: i32,
     question: String,
     answer: String,
     level: Level,
@@ -44,30 +46,32 @@ struct Question {
 }
 
 struct Filter {
+    number: i32,
     level: Level,
     tags: Vec<Tag>,
 }
 
-trait QuestionsRepo {
-    fn create(question: Question) -> Result<(), E>;
-    fn get(filter: Filter) -> Option<Vec<Question>>;
-    fn update(question: Question) -> Result<(), E>;
-    fn delete(id: Box<Hash>) -> Result<(), E>;
-}
 
-impl QuestionRepo {
-    fn create(question: Question) -> Result<(), E> {}
+trait QuestionRepo {
+    fn create(question: Question) -> Result<(), ()> {
+        Ok(())
+    }
 
-    fn get(filter: Filter) -> Option<Vec<Question>> {}
+    fn get(filter: Filter) -> Option<Vec<Question>> {
+        None
+    }
 
-    fn update(question: Question) -> Result<(), E> {}
+    fn update(question: Question) -> Result<(), ()> {
+        Ok(())
+    }
 
-    fn delete(id: Box<Hash>) -> Result<(), E> {}
+    fn delete(id: i32) -> Result<(), ()> {
+        Ok(())
+    }
 }
 
 #[get("/")]
 fn index() -> Json<&'static str> {
-    Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
 }
 
 #[get("/get")]
