@@ -1,8 +1,11 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 #[macro_use]
-extern crate rocket;
+extern crate rocket
+#[macro_use]
+extern crate strum_macros;
 extern crate uuid;
+extern crate strum;
 
 use std::fs;
 use std::result;
@@ -10,11 +13,14 @@ use std::hash::Hash;
 use std::collections;
 use uuid::Uuid;
 use rocket::response::content::Json;
+use strum::EnumMessage;
 
+#[derive(Display)]
 enum Tag {
     OOP
 }
 
+#[derive(Display)]
 enum Level {
     JUNIOR,
     MEDIUM,
@@ -62,7 +68,7 @@ fn index() -> Json<&'static str> {
 
 #[get("/random?<number>&<level>&<topic>")]
 fn random(number: u16, level: String, topic: Option<String>) -> Json<&'static str> {
-    let st = format!("{{'routes' : ['/random/<{}>/<{}>/<{:?}>']}}", number, level, topic);
+    let st = format!("{{'routes' : ['/random/{}/<{}>/<{}>/<{:?}>']}}",Tag::OOP, number, level, topic);
     Json(Box::leak(st.into_boxed_str()))
 }
 
