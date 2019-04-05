@@ -1,6 +1,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
 use rocket::response::content::Json;
 use std::collections;
@@ -10,10 +11,28 @@ enum Tag {
     OOP
 }
 
+impl Tag {
+    fn to_str(&self) -> &'static str {
+        match self {
+            Tag::OOP => return "oop",
+        }
+    }
+}
+
 enum Level {
     JUNIOR,
     MEDIUM,
-    SENIOR
+    SENIOR,
+}
+
+impl Level {
+    fn to_str(&self) -> &'static str {
+        match self {
+            Level::JUNIOR => return "Junior",
+            Level::MEDIUM => return "Medium",
+            Level::SENIOR => return "Senior"
+        }
+    }
 }
 
 struct Question {
@@ -21,12 +40,12 @@ struct Question {
     question: String,
     answer: String,
     level: Level,
-    tags: Vec<Tag>
+    tags: Vec<Tag>,
 }
 
 struct Filter {
     level: Level,
-    tags: Vec<Tag>
+    tags: Vec<Tag>,
 }
 
 trait QuestionsRepo {
@@ -37,21 +56,13 @@ trait QuestionsRepo {
 }
 
 impl QuestionRepo {
-    fn create(question: Question) -> Result<(), E> {
+    fn create(question: Question) -> Result<(), E> {}
 
-    }
+    fn get(filter: Filter) -> Option<Vec<Question>> {}
 
-    fn get(filter: Filter) -> Option<Vec<Question>> {
+    fn update(question: Question) -> Result<(), E> {}
 
-    }
-
-    fn update(question: Question) -> Result<(), E> {
-
-    }
-
-    fn delete(id: Box<Hash>) -> Result<(), E> {
-
-    }
+    fn delete(id: Box<Hash>) -> Result<(), E> {}
 }
 
 #[get("/")]
@@ -59,6 +70,14 @@ fn index() -> Json<&'static str> {
     Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
 }
 
+#[get("/get")]
+fn get() -> Json<&'static str> {
+    Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
+}
+
 fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+    let routes = routes![index,
+        get,
+    ];
+    rocket::ignite().mount("/", routes).launch();
 }
