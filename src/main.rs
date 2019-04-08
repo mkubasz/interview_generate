@@ -1,7 +1,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 #[macro_use]
-extern crate rocket
+extern crate rocket;
 #[macro_use]
 extern crate strum_macros;
 extern crate uuid;
@@ -41,23 +41,49 @@ struct Filter {
     tags: Vec<Tag>,
 }
 
+struct JsonProvider{
+    file_name: String
+}
+
+impl JsonProvider {
+    fn parse_file() -> Option<Vec<Question>> {
+        None
+    }
+
+    fn add_item(question: Question) -> Result<(),()>{
+        Ok(())
+    }
+
+    fn update_item() -> Result<(),()>{
+        Ok(())
+    }
+
+    fn delete_item() -> Result<(),()>{
+        Ok(())
+    }
+}
+
+
+
 struct QuestionRepo;
 
 impl QuestionRepo {
     fn create(question: Question) -> Result<(), ()> {
-        Ok(())
+        JsonProvider::add_item(question)
     }
 
-    fn get() -> Option<Vec<&'static str>> {
-        Some(vec!["d"])
+    fn read() -> Option<Vec<Question>> {
+        // Implement session
+        JsonProvider::parse_file()
     }
+
 
     fn update(question: Question) -> Result<(), ()> {
-        Ok(())
+        JsonProvider::update_item()
     }
 
-    fn delete(id: Uuid) -> Result<(), ()> {
-        Ok(())
+    fn delete(id: Uuid) -> Result<(),()> {
+        JsonProvider::delete_item()
     }
 }
 
@@ -66,50 +92,49 @@ fn index() -> Json<&'static str> {
     Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
 }
 
-#[get("/random?<number>&<level>&<topic>")]
-fn random(number: u16, level: String, topic: Option<String>) -> Json<&'static str> {
-    let st = format!("{{'routes' : ['/random/{}/<{}>/<{}>/<{:?}>']}}",Tag::OOP, number, level, topic);
-    Json(Box::leak(st.into_boxed_str()))
+fn randomize_questions() -> Vec<Question> {
+
+}
+
+#[get("/random?<amount>&<level>&<topic>")]
+fn random(amount: u16, level: String, topic: Option<String>) -> Json<String> {
+    Json(serde_json::to_string(randomize_questions()).expect("Error while randomize."))
 }
 
 mod question {
     use rocket_contrib::json::Json;
+    use crate::QuestionRepo;
 
     #[get("/question")]
-    pub fn read() -> Json<&'static str> {
-        Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
+    pub fn read() -> Json<String> {
+        let questions = QuestionRepo::read();
+        match questions {
+            None => Json(format!("Empty database.")),
+            Some(q) => {
+                serde_json::to_string(q)
+            },
+        }
     }
 
     #[post("/question")]
     pub fn create() -> Json<&'static str> {
-        Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
     }
 
     #[put("/question")]
-    pub fn update() {}
+    pub fn update() {
 
-    #[delete("/question")]
-    pub fn delete() {}
-}
-
-mod tag {
-    use rocket_contrib::json::Json;
-
-    #[get("/tag")]
-    pub fn read() -> Json<&'static str> {
-        Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
     }
 
-    #[post("/tag")]
-    pub fn create() -> Json<&'static str> {
-        Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
+    #[delete("/question/<id>")]
+    pub fn delete(id: String) {
+        match uuid::Uuid::from_str(id.as_str()) {
+            Ok(id) => {
+                // TODO
+                QuestionRepo::delete(id).unwrap()
+            },
+            Err(_) => {},
+        }
     }
-
-    #[put("/tag")]
-    pub fn update() {}
-
-    #[delete("/tag")]
-    pub fn delete() {}
 }
 
 fn main() {
@@ -119,11 +144,7 @@ fn main() {
         question::read,
         question::create,
         question::update,
-        question::delete,
-        tag::read,
-        tag::create,
-        tag::update,
-        tag::delete
+        question::delete
     ];
     rocket::ignite().mount("/", routes).launch();
 }
