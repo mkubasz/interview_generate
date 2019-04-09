@@ -1,22 +1,11 @@
 {
-	"questions" : {
-		"general" : {
-			"junior" : [
-				{"tags": [], "question": "", "answer": ""}
-			],
-			"medium" : [
-				{"tags": [], "question": "", "answer": ""}
-			],
-			"senior": [
-				{"tags": [], "question": "", "answer": ""}
-			]
-		}
-	},
-	"tags": [
-		"oop",
-		"multithreading",
-		"multiprocessing",
-		"architecture",
-		"design pattern"
-	]
+  "questions": [
+    {
+      "tags": [],
+      "question": "",
+      "answer": "",
+      "level": "JUNIOR",
+      "id": 12
+    }
+  ]
 }

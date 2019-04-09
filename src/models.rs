@@ -1,19 +1,25 @@
-use uuid::Uuid;
+use serde::{Deserialize, Serialize};
 
-#[derive(Display)]
+#[derive(Display, Serialize, Deserialize)]
 pub enum Tag {
     OOP,
 }
 
-#[derive(Display)]
+#[derive(Display, Serialize, Deserialize)]
 enum Level {
     JUNIOR,
     MEDIUM,
     SENIOR,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct File {
+    pub questions: Vec<Question>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Question {
-    id: Option<Uuid>,
+    id: Option<String>,
     question: String,
     answer: String,
     level: Level,

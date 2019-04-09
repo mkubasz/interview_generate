@@ -11,13 +11,25 @@ extern crate strum_macros;
 extern crate strum;
 
 use crate::models::Question;
+use std::fs::File;
+use std::io::prelude::*;
 use uuid::Uuid;
 
-struct JsonProvider;
+struct JsonProvider {
+    file_name: &'static str,
+}
 
 impl JsonProvider {
-    fn parse_file() -> Option<Vec<Question>> {
-        None
+    fn parse_file(&self) -> Option<Vec<Question>> {
+        match File::open(&self.file_name) {
+            Ok(mut file) => {
+                let mut contents = String::new();
+                file.read_to_string(&mut contents).expect("Error");
+                let parsed: models::File = serde_json::from_str(&contents).expect("Error");
+                return Some(parsed.questions);
+            }
+            Err(e) => None,
+        }
     }
 
     fn add_item(question: Question) -> Result<(), ()> {
@@ -42,7 +54,10 @@ impl QuestionRepo {
 
     fn read() -> Option<Vec<Question>> {
         // Implement session
-        JsonProvider::parse_file()
+        let j = JsonProvider {
+            file_name: "data/interview.json",
+        };
+        j.parse_file()
     }
 
     fn update(question: Question) -> Result<(), ()> {
