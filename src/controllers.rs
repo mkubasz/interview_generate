@@ -26,7 +26,7 @@ pub mod question {
         match questions {
             None => Json(format!("Empty database.")),
             //Some(q) => //serde_json::to_string(&q),
-            Some(q) => unimplemented!(),
+            Some(q) => Json(serde_json::to_string(&q).expect("Error")),
         }
     }
 

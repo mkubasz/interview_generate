@@ -55,7 +55,7 @@ impl QuestionRepo {
     fn read() -> Option<Vec<Question>> {
         // Implement session
         let j = JsonProvider {
-            file_name: "data/interview.json",
+            file_name: "src/data/interview.json",
         };
         j.parse_file()
     }
