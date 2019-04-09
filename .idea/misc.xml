@@ -7,6 +7,7 @@
     <option name="languageLevel" value="ES6" />
   </component>
   <component name="RustProjectSettings">
+    <option name="runRustfmtOnSave" value="true" />
     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
   </component>
 </project>
