@@ -21,15 +21,14 @@ struct JsonProvider {
 
 impl JsonProvider {
     fn parse_file(&self) -> Option<Vec<Question>> {
-        match File::open(&self.file_name) {
-            Ok(mut file) => {
+        File::open(&self.file_name)
+            .and_then(|mut file| {
                 let mut contents = String::new();
-                file.read_to_string(&mut contents).expect("Error");
+                file.read_to_string(&mut contents).ok();
                 let parsed: models::File = serde_json::from_str(&contents).expect("Error");
-                return Some(parsed.questions);
-            }
-            Err(e) => None,
-        }
+                Ok(parsed.questions)
+            })
+            .ok()
     }
 
     fn add_item(question: Question) -> Result<(), ()> {
@@ -54,10 +53,10 @@ impl QuestionRepo {
 
     fn read() -> Option<Vec<Question>> {
         // Implement session
-        let j = JsonProvider {
+        let jp = JsonProvider {
             file_name: "src/data/interview.json",
         };
-        j.parse_file()
+        jp.parse_file()
     }
 
     fn update(question: Question) -> Result<(), ()> {
