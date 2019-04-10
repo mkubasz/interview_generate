@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Display, Serialize, Deserialize)]
+#[derive(Display, Serialize, Deserialize, Clone)]
 pub enum Tag {
     OOP,
 }
 
-#[derive(Display, Serialize, Deserialize)]
+#[derive(Display, Serialize, Deserialize, Clone)]
 enum Level {
     JUNIOR,
     MEDIUM,
@@ -17,7 +17,7 @@ pub struct File {
     pub questions: Vec<Question>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Question {
     id: Option<String>,
     question: String,

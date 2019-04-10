@@ -1,8 +1,8 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-mod controllers;
-mod lib;
-mod models;
+pub mod controllers;
+pub mod libs;
+pub mod models;
 
 #[macro_use]
 extern crate rocket;
@@ -10,9 +10,13 @@ extern crate rocket;
 extern crate strum_macros;
 extern crate strum;
 
+use crate::libs::session::Session;
 use crate::models::Question;
 use std::fs::File;
 use std::io::prelude::*;
+use std::sync::atomic::AtomicPtr;
+use std::sync::Arc;
+
 use uuid::Uuid;
 
 struct JsonProvider {
@@ -52,7 +56,6 @@ impl QuestionRepo {
     }
 
     fn read() -> Option<Vec<Question>> {
-        // Implement session
         let jp = JsonProvider {
             file_name: "src/data/interview.json",
         };
@@ -77,5 +80,8 @@ fn main() {
         controllers::question::update,
         controllers::question::delete
     ];
-    rocket::ignite().mount("/", routes).launch();
+
+    let session = Session::new();
+
+    rocket::ignite().mount("/", routes).manage(session).launch();
 }
