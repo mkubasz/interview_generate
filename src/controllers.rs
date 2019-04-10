@@ -18,8 +18,8 @@ pub fn random(amount: u16, level: String, topic: Option<String>) -> Json<String>
 
 pub mod question {
     use crate::libs::session::Session;
+    use crate::libs::QuestionRepo;
     use crate::models::Question;
-    use crate::QuestionRepo;
     use core::borrow::Borrow;
     use rocket::State;
     use rocket_contrib::json::Json;
@@ -27,28 +27,7 @@ pub mod question {
 
     #[get("/question")]
     pub fn read(state: State<Session>) -> Json<String> {
-        if !state
-            .session_dic
-            .read()
-            .expect("No state")
-            .contains_key("obj")
-        {
-            match QuestionRepo::read() {
-                None => None,
-                Some(q) => state
-                    .session_dic
-                    .write()
-                    .expect("No state")
-                    .insert("obj", q),
-            };
-        }
-        match state
-            .session_dic
-            .read()
-            .expect("No state")
-            .get("obj")
-            .and_then(|q| Some(q.to_vec()))
-        {
+        match QuestionRepo::read(state) {
             None => Json(format!("Empty database.")),
             Some(questions) => Json(serde_json::to_string(&questions).expect("Error")),
         }

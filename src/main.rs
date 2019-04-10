@@ -11,65 +11,6 @@ extern crate strum_macros;
 extern crate strum;
 
 use crate::libs::session::Session;
-use crate::models::Question;
-use std::fs::File;
-use std::io::prelude::*;
-use std::sync::atomic::AtomicPtr;
-use std::sync::Arc;
-
-use uuid::Uuid;
-
-struct JsonProvider {
-    file_name: &'static str,
-}
-
-impl JsonProvider {
-    fn parse_file(&self) -> Option<Vec<Question>> {
-        File::open(&self.file_name)
-            .and_then(|mut file| {
-                let mut contents = String::new();
-                file.read_to_string(&mut contents).ok();
-                let parsed: models::File = serde_json::from_str(&contents).expect("Error");
-                Ok(parsed.questions)
-            })
-            .ok()
-    }
-
-    fn add_item(question: Question) -> Result<(), ()> {
-        Ok(())
-    }
-
-    fn update_item() -> Result<(), ()> {
-        Ok(())
-    }
-
-    fn delete_item() -> Result<(), ()> {
-        Ok(())
-    }
-}
-
-struct QuestionRepo;
-
-impl QuestionRepo {
-    fn create(question: Question) -> Result<(), ()> {
-        JsonProvider::add_item(question)
-    }
-
-    fn read() -> Option<Vec<Question>> {
-        let jp = JsonProvider {
-            file_name: "src/data/interview.json",
-        };
-        jp.parse_file()
-    }
-
-    fn update(question: Question) -> Result<(), ()> {
-        JsonProvider::update_item()
-    }
-
-    fn delete(id: Uuid) -> Result<(), ()> {
-        JsonProvider::delete_item()
-    }
-}
 
 fn main() {
     let routes = routes![
