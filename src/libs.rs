@@ -2,8 +2,9 @@ use crate::libs::session::Session;
 use crate::models;
 use crate::models::Question;
 use rocket::State;
+use std::fs;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Error, Read, Write};
 use uuid::Uuid;
 
 pub mod session {
@@ -29,7 +30,7 @@ pub struct QuestionRepo;
 
 impl QuestionRepo {
     fn create(question: Question) -> Result<(), ()> {
-        JsonProvider::add_item(question)
+        Ok(())
     }
 
     pub fn read(state: State<Session>) -> Option<Vec<Question>> {
@@ -58,11 +59,11 @@ impl QuestionRepo {
     }
 
     fn update(question: Question) -> Result<(), ()> {
-        JsonProvider::update_item()
+        Ok(())
     }
 
     pub fn delete(id: Uuid) -> Result<(), ()> {
-        JsonProvider::delete_item()
+        Ok(())
     }
 }
 
@@ -82,15 +83,10 @@ impl JsonProvider {
             .ok()
     }
 
-    fn add_item(question: Question) -> Result<(), ()> {
-        Ok(())
-    }
-
-    fn update_item() -> Result<(), ()> {
-        Ok(())
-    }
-
-    fn delete_item() -> Result<(), ()> {
-        Ok(())
+    pub fn save_file(&self, questions: &Vec<Question>) -> Result<(), Error> {
+        File::create(&self.file_name).and_then(|mut file| {
+            let json = serde_json::to_string(&questions).expect("Error");
+            file.write_all(json.as_ref())
+        })
     }
 }
