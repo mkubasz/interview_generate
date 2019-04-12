@@ -3,10 +3,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Display, Serialize, Deserialize, Clone)]
 pub enum Tag {
     OOP,
-}
-
-#[derive(Display, Serialize, Deserialize, Clone)]
-enum Level {
     JUNIOR,
     MEDIUM,
     SENIOR,

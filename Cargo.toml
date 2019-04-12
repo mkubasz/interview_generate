@@ -11,6 +11,7 @@ serde_json = "1.0"
 uuid = "0.7"
 strum = "0.15.0"
 strum_macros = "0.15.0"
+rand = "0.6"
 
 [dependencies.rocket_contrib]
 version = "0.4.0"

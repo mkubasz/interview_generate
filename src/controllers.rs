@@ -1,37 +1,25 @@
-use crate::models::Question;
-use rocket_contrib::json::Json;
-use crate::libs::QuestionRepo;
-use rocket::State;
+use crate::libs;
 use crate::libs::session::Session;
-use rand::distributions::{Distribution, Uniform};
-use std::collections::HashSet;
+use crate::libs::QuestionRepo;
+use crate::models::Question;
+use rocket::State;
+use rocket_contrib::json::Json;
 
 #[get("/")]
 pub fn index() -> Json<&'static str> {
     Json("{'routes' : ['/get/<topic>/<level>/<tag>']}")
 }
 
-pub fn randomize_questions(state: State<Session>, amount: u16) -> Option<Vec<Question>> {
-    let mut rng = rand::thread_rng();
-    let gen_num = Uniform::from(1..amount);
-    let mut my_set = HashSet::new();
-    for _ in 0..amount {
-        while !my_set.insert(gen_num.sample(&mut rng)) {}
-    }
-    for it in my_set {
-
-    }
-    match QuestionRepo::read(state) {
-        None => None,
-        Some(questions) => if amount <= questions.len() { questions. } else { None },
-    }
-}
-
 #[get("/random?<amount>&<level>&<topic>")]
-pub fn random(state: State<Session>, amount: u16, level: String, topic: Option<String>) -> Json<String> {
-    match randomize_questions(state, amount) {
-        None => Json(format!("Empty database.")),
-        Some(questions) => Json(serde_json::to_string(&questions).expect("Error")),
+pub fn random(
+    state: State<Session>,
+    amount: u64,
+    level: String,
+    topic: Option<String>,
+) -> Json<String> {
+    match libs::randomize_questions(state, amount) {
+        Err(err) => Json(err),
+        Ok(questions) => Json(serde_json::to_string(&questions).expect("Error")),
     }
 }
 
