@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 
 #[derive(Display, Serialize, Deserialize, Clone)]
 pub enum Tag {
@@ -15,15 +16,20 @@ pub struct File {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Question {
-    id: Option<String>,
-    question: String,
-    answer: String,
-    level: Level,
-    tags: Vec<Tag>,
+    pub id: Option<String>,
+    pub question: String,
+    pub answer: String,
+    pub tags: Vec<Tag>,
+}
+
+impl Hash for Question {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.question.hash(state);
+        self.answer.hash(state);
+    }
 }
 
 struct Filter {
     number: u16,
-    level: Level,
     tags: Vec<Tag>,
 }

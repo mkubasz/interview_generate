@@ -26,7 +26,7 @@ pub fn random(
 pub mod question {
     use crate::libs::session::Session;
     use crate::libs::QuestionRepo;
-    use crate::models::Question;
+    use crate::models::{Question, Tag};
     use core::borrow::Borrow;
     use rocket::State;
     use rocket_contrib::json::Json;
@@ -41,7 +41,16 @@ pub mod question {
     }
 
     #[post("/question")]
-    pub fn create() -> Json<String> {
+    pub fn create(state: State<Session>) -> Json<String> {
+        QuestionRepo::create(
+            state,
+            Question {
+                id: Some(format!("1")),
+                question: "fdfd".to_string(),
+                answer: "fdfd".to_string(),
+                tags: vec![Tag::OOP],
+            },
+        );
         Json(format!("Create"))
     }
 

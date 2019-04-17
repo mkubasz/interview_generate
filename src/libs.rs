@@ -13,9 +13,12 @@ use rocket::State;
 use uuid::Uuid;
 
 pub mod session {
+    use crate::libs::JsonProvider;
     use crate::models::Question;
     use core::borrow::Borrow;
+    use rocket::State;
     use std::collections::HashMap;
+    use std::hash::{Hash, Hasher};
     use std::sync::RwLock;
 
     pub struct Session {
@@ -28,13 +31,47 @@ pub mod session {
                 session_dic: RwLock::new(HashMap::new()),
             }
         }
+        pub fn get(state: State<Session>) -> Option<Vec<Question>> {
+            let obj_key = "obj";
+            state
+                .session_dic
+                .read()
+                .expect("No state")
+                .get(obj_key)
+                .and_then(|q| Some(q.to_vec()))
+        }
+
+        pub fn add(state: State<Session>, question: Question) -> Option<Vec<Question>> {
+            let obj_key = "obj";
+            let mut new_state = state
+                .session_dic
+                .read()
+                .expect("No state")
+                .get(obj_key)
+                .expect("Test")
+                .to_vec();
+            new_state.push(question);
+            state
+                .session_dic
+                .write()
+                .expect("No state")
+                .insert(obj_key, new_state)
+        }
+
+        pub fn commit(questions: Vec<Question>) {
+            JsonProvider {
+                file_name: "src/data/interview.json",
+            }
+            .save_file(&questions);
+        }
     }
 }
 
 pub struct QuestionRepo;
 
 impl QuestionRepo {
-    fn create(question: Question) -> Result<(), ()> {
+    pub fn create(state: State<Session>, question: Question) -> Result<(), ()> {
+        Session::commit(Session::add(state, question).unwrap());
         Ok(())
     }
 
@@ -59,12 +96,7 @@ impl QuestionRepo {
                     .insert(obj_key, q),
             };
         }
-        state
-            .session_dic
-            .read()
-            .expect("No state")
-            .get(obj_key)
-            .and_then(|q| Some(q.to_vec()))
+        Session::get(state)
     }
 
     fn update(question: Question) -> Result<(), ()> {
@@ -113,7 +145,7 @@ pub fn randomize_questions(state: State<Session>, amount: u64) -> Result<Vec<Que
                 let mut checked_set = HashSet::new();
                 let mut q = Vec::new();
 
-                while my_set.len() != uamount {
+                while checked_set.len() != uamount {
                     let gen_number = gen_num.sample(&mut rng);
                     if checked_set.insert(gen_number) {
                         q.push(
