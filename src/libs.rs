@@ -1,6 +1,5 @@
 use crate::libs::session::Session;
 use crate::models;
-use crate::models::File;
 use crate::models::Question;
 
 use std::collections::HashSet;
@@ -127,10 +126,10 @@ impl JsonProvider {
 
     pub fn save_file(&self, questions: &Vec<Question>) -> Result<(), Error> {
         File::create(&self.file_name).and_then(|mut file| {
-            let file = crate::models::File {
-                questions: questions.as_ref(),
+            let file_json = crate::models::File {
+                questions: questions.clone(),
             };
-            let json = serde_json::to_string(&file).expect("Error");
+            let json = serde_json::to_string(&file_json).expect("Error");
             file.write_all(json.as_ref())
         })
     }
