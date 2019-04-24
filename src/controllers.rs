@@ -1,7 +1,7 @@
 use crate::libs;
 use crate::libs::session::Session;
 use crate::libs::QuestionRepo;
-use crate::models::Question;
+use crate::models::{Question, Tag};
 use rocket::State;
 use rocket_contrib::json::Json;
 
@@ -17,7 +17,7 @@ pub fn random(
     level: String,
     topic: Option<String>,
 ) -> Json<String> {
-    match libs::randomize_questions(state, amount) {
+    match libs::randomize_questions(state, amount, vec![Tag::JUNIOR]) {
         Err(err) => Json(err),
         Ok(questions) => Json(serde_json::to_string(&questions).expect("Error")),
     }
@@ -42,7 +42,23 @@ pub mod question {
 
     #[post("/question")]
     pub fn create(state: State<Session>) -> Json<String> {
-        QuestionRepo::create(
+        match QuestionRepo::create(
+            state,
+            Question {
+                id: Some(format!("1")),
+                question: "fdfd".to_string(),
+                answer: "fdfd".to_string(),
+                tags: vec![Tag::OOP],
+            },
+        ) {
+            Ok(()) => Json(format!("Create")),
+            Err(er) => Json(format!("Error")),
+        }
+    }
+
+    #[put("/question")]
+    pub fn update(state: State<Session>) -> Json<String> {
+        QuestionRepo::update(
             state,
             Question {
                 id: Some(format!("1")),
@@ -51,19 +67,13 @@ pub mod question {
                 tags: vec![Tag::OOP],
             },
         );
-        Json(format!("Create"))
+        Json(format!("Update"))
     }
 
-    #[put("/question")]
-    pub fn update() {}
-
     #[delete("/question/<id>")]
-    pub fn delete(id: String) {
+    pub fn delete(state: State<Session>, id: String) {
         match uuid::Uuid::parse_str(id.as_str()) {
-            Ok(id) => {
-                // TODO
-                QuestionRepo::delete(id).unwrap()
-            }
+            Ok(id) => QuestionRepo::delete(state, id).unwrap(),
             Err(_) => {}
         }
     }

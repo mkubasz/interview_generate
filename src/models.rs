@@ -9,6 +9,16 @@ pub enum Tag {
     SENIOR,
 }
 
+impl PartialEq for Tag {
+    fn eq(&self, other: &Tag) -> bool {
+        self == other
+    }
+
+    fn ne(&self, other: &Tag) -> bool {
+        self != other
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct File {
     pub questions: Vec<Question>,

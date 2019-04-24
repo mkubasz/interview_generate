@@ -1,6 +1,6 @@
 use crate::libs::session::Session;
 use crate::models;
-use crate::models::Question;
+use crate::models::{Question, Tag};
 
 use std::collections::HashSet;
 use std::convert::TryFrom;
@@ -8,6 +8,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{Error, Read, Write};
 
+use core::borrow::Borrow;
 use rand::distributions::{Distribution, Uniform};
 use rocket::State;
 use uuid::Uuid;
@@ -19,6 +20,7 @@ pub mod session {
     use rocket::State;
     use std::collections::HashMap;
     use std::hash::{Hash, Hasher};
+    use std::io::Error;
     use std::sync::RwLock;
 
     pub struct Session {
@@ -31,7 +33,7 @@ pub mod session {
                 session_dic: RwLock::new(HashMap::new()),
             }
         }
-        pub fn get(state: State<Session>) -> Option<Vec<Question>> {
+        pub fn get(state: &State<Session>) -> Option<Vec<Question>> {
             let obj_key = "obj";
             state
                 .session_dic
@@ -41,7 +43,7 @@ pub mod session {
                 .and_then(|q| Some(q.to_vec()))
         }
 
-        pub fn add(state: State<Session>, question: Question) -> Option<Vec<Question>> {
+        pub fn add(state: &State<Session>, question: &Question) -> Option<Vec<Question>> {
             let obj_key = "obj";
             let mut new_state = state
                 .session_dic
@@ -50,7 +52,7 @@ pub mod session {
                 .get(obj_key)
                 .expect("Test")
                 .to_vec();
-            new_state.push(question);
+            new_state.push(question.clone());
             state
                 .session_dic
                 .write()
@@ -58,11 +60,11 @@ pub mod session {
                 .insert(obj_key, new_state)
         }
 
-        pub fn commit(questions: Vec<Question>) {
+        pub fn commit(questions: Vec<Question>) -> Result<(), Error> {
             JsonProvider {
                 file_name: "src/data/interview.json",
             }
-            .save_file(&questions);
+            .save_file(&questions)
         }
     }
 }
@@ -70,9 +72,8 @@ pub mod session {
 pub struct QuestionRepo;
 
 impl QuestionRepo {
-    pub fn create(state: State<Session>, question: Question) -> Result<(), ()> {
-        Session::commit(Session::add(state, question).unwrap());
-        Ok(())
+    pub fn create(state: State<Session>, question: Question) -> Result<(), Error> {
+        Session::commit(Session::add(&state, &question).unwrap())
     }
 
     pub fn read(state: State<Session>) -> Option<Vec<Question>> {
@@ -96,14 +97,22 @@ impl QuestionRepo {
                     .insert(obj_key, q),
             };
         }
-        Session::get(state)
+        Session::get(&state)
     }
 
-    fn update(question: Question) -> Result<(), ()> {
+    pub fn update(state: State<Session>, question: Question) -> Result<(), ()> {
+        let mut questions = Session::get(&state).unwrap();
+        questions.retain(|p| p.id != question.id);
+        questions.push(question.clone());
+        Session::commit(questions);
+        Session::add(&state, &question);
         Ok(())
     }
 
-    pub fn delete(id: Uuid) -> Result<(), ()> {
+    pub fn delete(state: State<Session>, id: Uuid) -> Result<(), ()> {
+        let mut questions = Session::get(&state).unwrap();
+        questions.retain(|p| p.id != Some(id.to_string()));
+        Session::commit(questions);
         Ok(())
     }
 }
@@ -135,11 +144,26 @@ impl JsonProvider {
     }
 }
 
-pub fn randomize_questions(state: State<Session>, amount: u64) -> Result<Vec<Question>, String> {
+pub fn contains(mut tag1: Vec<Tag>, tag2: Vec<Tag>) -> bool {
+    let mut contain = false;
+    tag1.iter_mut().for_each(|el| {
+        if tag2.contains(el) {
+            contain = true;
+        }
+    });
+    contain
+}
+
+pub fn randomize_questions(
+    state: State<Session>,
+    amount: u64,
+    tags: Vec<Tag>,
+) -> Result<Vec<Question>, String> {
     match QuestionRepo::read(state) {
         None => Err(format!("No question resources")),
-        Some(questions) => {
+        Some(mut questions) => {
             let uamount = usize::try_from(amount).expect("Error while parsing");
+            //  questions.retain(|p| contains(p.tags.clone(), tags.clone()));
             if questions.len() < uamount {
                 Err(format!("Amount is bigger then list of questions"))
             } else if !questions.is_empty() {
